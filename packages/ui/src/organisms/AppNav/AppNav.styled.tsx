@@ -1,6 +1,7 @@
 import { styled } from '@mui/material/styles';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
+import Box from '@mui/material/Box';
 import { NavLink } from 'react-router-dom';
 
 export const StyledAppBar = styled(AppBar)(({ theme }) => ({
@@ -13,6 +14,13 @@ export const StyledAppBar = styled(AppBar)(({ theme }) => ({
 export const StyledToolbar = styled(Toolbar)({
   minHeight: 48,
   gap: 4,
+});
+
+export const NavLinks = styled(Box)({
+  display: 'flex',
+  alignItems: 'center',
+  gap: 4,
+  flex: 1,
 });
 
 export const NavItem = styled(NavLink)(({ theme }) => ({

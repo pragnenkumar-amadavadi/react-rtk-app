@@ -13,7 +13,42 @@ import {
   type PaginatedResponse,
   type PaginationParams,
   type FindResult,
+  type DashboardStats,
 } from '@repo/types';
+
+const CANDIDATE_STATUSES: Candidate['status'][] = [
+  'applied', 'screening', 'interview', 'offer', 'hired', 'rejected',
+];
+
+function computeDashboardStats(): DashboardStats {
+  const candidateStatusCounts = CANDIDATE_STATUSES.reduce((acc, status) => {
+    acc[status] = 0;
+    return acc;
+  }, {} as Record<Candidate['status'], number>);
+
+  const now = new Date();
+  let hiredThisMonth = 0;
+
+  for (const candidate of candidates) {
+    candidateStatusCounts[candidate.status] += 1;
+    if (candidate.status === 'hired') {
+      const appliedDate = new Date(candidate.appliedAt);
+      if (
+        appliedDate.getFullYear() === now.getFullYear() &&
+        appliedDate.getMonth() === now.getMonth()
+      ) {
+        hiredThisMonth += 1;
+      }
+    }
+  }
+
+  return {
+    openCandidates: candidates.length - candidateStatusCounts.hired - candidateStatusCounts.rejected,
+    openJobs: jobs.length,
+    hiredThisMonth,
+    candidateStatusCounts,
+  };
+}
 
 function paginate<T>(items: T[], page: number, limit: number): PaginatedResponse<T> {
   const start = (page - 1) * limit;
@@ -90,4 +125,8 @@ export const handlers = [
       return HttpResponse.json(response, { status: 201 });
     },
   ),
+
+  http.get('/api/dashboard/stats', () => {
+    return HttpResponse.json(computeDashboardStats());
+  }),
 ];

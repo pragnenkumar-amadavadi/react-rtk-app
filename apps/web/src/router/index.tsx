@@ -9,12 +9,14 @@ import {
   jobsInfiniteQueryOptions,
   jobDetailQueryOptions,
 } from '../features/jobs/jobQueries';
+import { dashboardStatsQueryOptions } from '../features/dashboard/dashboardQueries';
 import {
   CandidateListPage,
   CandidateDetailPage,
   JobListPage,
   JobDetailPage,
   ApplicationPage,
+  DashboardPage,
 } from './lazyPages';
 
 export const router = createBrowserRouter([
@@ -56,6 +58,14 @@ export const router = createBrowserRouter([
       {
         path: '/jobs/:jobId/apply/:step',
         element: <ApplicationPage />,
+      },
+      {
+        path: '/dashboard',
+        element: <DashboardPage />,
+        loader: () => {
+          queryClient.prefetchQuery(dashboardStatsQueryOptions);
+          return null;
+        },
       },
     ],
   },

@@ -10,3 +10,5 @@ export { default as ApplicationStepView } from './ApplicationStepView';
 export type { Props as ApplicationStepViewProps } from './ApplicationStepView';
 export { default as ErrorFallback } from './ErrorFallback';
 export type { Props as ErrorFallbackProps } from './ErrorFallback';
+export { default as DashboardView } from './DashboardView';
+export type { Props as DashboardViewProps } from './DashboardView';
