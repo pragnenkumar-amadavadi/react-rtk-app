@@ -1,0 +1,25 @@
+{
+  "name": "react-rtk-app",
+  "private": true,
+  "version": "0.0.0",
+  "packageManager": "pnpm@9.15.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "turbo run dev",
+    "dev:mock": "turbo run dev:mock",
+    "build": "turbo run build",
+    "lint": "turbo run lint && node scripts/check-version-drift.cjs",
+    "check:versions": "node scripts/check-version-drift.cjs",
+    "test": "turbo run test",
+    "test:watch": "turbo run test:watch",
+    "test:coverage": "turbo run test:coverage",
+    "storybook": "turbo run storybook",
+    "build-storybook": "turbo run build-storybook",
+    "graph": "turbo run build --graph=.turbo/graph.mermaid"
+  },
+  "devDependencies": {
+    "turbo": "^2.5.0"
+  }
+}

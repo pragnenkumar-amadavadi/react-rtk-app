@@ -1,0 +1,7 @@
+{
+  "extends": "@repo/tsconfig/vite-app.json",
+  "compilerOptions": {
+    "lib": ["ES2023"]
+  },
+  "include": ["src"]
+}

@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(yarn test *)",
+      "Bash(npx tsc *)",
+      "Bash(yarn lint)",
+      "Bash(curl -s http://localhost:*)",
+      "Bash(yarn eslint *)"
+    ]
+  }
+}
