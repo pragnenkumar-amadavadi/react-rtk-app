@@ -4,3 +4,7 @@ export { default as AppNav } from './AppNav';
 export type { AppNavProps } from './AppNav';
 export { default as ApplicationForm } from './ApplicationForm';
 export type { Props as ApplicationFormProps, FieldConfig } from './ApplicationForm';
+export { default as CandidateNotes } from './CandidateNotes';
+export type { Props as CandidateNotesProps } from './CandidateNotes';
+export { default as JobApplicants } from './JobApplicants';
+export type { Props as JobApplicantsProps } from './JobApplicants';

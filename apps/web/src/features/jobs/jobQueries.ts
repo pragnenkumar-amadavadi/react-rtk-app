@@ -8,7 +8,7 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 import { queryClient } from '@repo/api-client';
-import { fetchJobs, fetchJobById, submitApplication } from '../../api/jobsApi';
+import { fetchJobs, fetchJobById, submitApplication, fetchJobApplicants } from '../../api/jobsApi';
 import type { ApplicationPayload, JobId } from '@repo/types';
 
 const LIMIT = 12;
@@ -19,6 +19,7 @@ export const jobKeys = {
   list: () => [...jobKeys.lists()] as const,
   details: () => [...jobKeys.all, 'detail'] as const,
   detail: (id: string) => [...jobKeys.details(), id] as const,
+  applicants: (id: string) => [...jobKeys.detail(id), 'applicants'] as const,
 };
 
 export const jobsInfiniteQueryOptions = infiniteQueryOptions({
@@ -66,6 +67,18 @@ export function usePrefetchJob() {
     (id: JobId) => queryClient.prefetchQuery(jobDetailQueryOptions(String(id))),
     [queryClient],
   );
+}
+
+export function jobApplicantsQueryOptions(jobId: string) {
+  return queryOptions({
+    queryKey: jobKeys.applicants(jobId),
+    queryFn: () => fetchJobApplicants(jobId),
+    enabled: !!jobId,
+  });
+}
+
+export function useJobApplicants(jobId: string) {
+  return useQuery(jobApplicantsQueryOptions(jobId));
 }
 
 export function useSubmitApplicationMutation() {

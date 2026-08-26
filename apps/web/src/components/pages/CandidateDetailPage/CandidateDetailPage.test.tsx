@@ -2,11 +2,20 @@ import { screen } from '@testing-library/react'
 import { toCandidateId, type Candidate } from '@repo/types'
 import { renderWithTheme } from '../../../tests/utils'
 import { useCandidateQuery } from '../../../features/candidates/candidateQueries'
+import {
+  useCandidateNotesQuery,
+  useAddCandidateNoteMutation,
+} from '../../../features/candidates/candidateNotesQueries'
 import CandidateDetailPage from './CandidateDetailPage.component'
 
 // Factory prevents loading the real module chain (→ axiosClient → config → import.meta.env)
 jest.mock('../../../features/candidates/candidateQueries', () => ({
   useCandidateQuery: jest.fn(),
+}))
+
+jest.mock('../../../features/candidates/candidateNotesQueries', () => ({
+  useCandidateNotesQuery: jest.fn(),
+  useAddCandidateNoteMutation: jest.fn(),
 }))
 
 // Provide a fixed :id param without needing a full router setup
@@ -29,11 +38,19 @@ const mockCandidate: Candidate = {
 }
 
 const mockQueryBase = { data: undefined, isLoading: false, isError: false }
+const mockNotesQueryBase = { data: [], isLoading: false, isError: false }
+const mockAddNoteMutationBase = { mutate: jest.fn(), isPending: false }
 
 describe('CandidateDetailPage', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     jest.mocked(useCandidateQuery).mockReturnValue(mockQueryBase as unknown as ReturnType<typeof useCandidateQuery>)
+    jest.mocked(useCandidateNotesQuery).mockReturnValue(
+      mockNotesQueryBase as unknown as ReturnType<typeof useCandidateNotesQuery>,
+    )
+    jest.mocked(useAddCandidateNoteMutation).mockReturnValue(
+      mockAddNoteMutationBase as unknown as ReturnType<typeof useAddCandidateNoteMutation>,
+    )
   })
 
   it('passes isLoading to the view — shows spinner', async () => {

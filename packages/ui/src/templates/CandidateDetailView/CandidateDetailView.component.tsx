@@ -1,4 +1,5 @@
 import StatusChip from '../../atoms/StatusChip';
+import CandidateNotes from '../../organisms/CandidateNotes';
 import type { CandidateDetailViewProps } from './CandidateDetailView.types';
 import {
   PageContainer,
@@ -21,7 +22,15 @@ import {
   DetailErrorAlert,
 } from './CandidateDetailView.styled';
 
-export default function CandidateDetailView({ candidate, isLoading, isError }: CandidateDetailViewProps) {
+export default function CandidateDetailView({
+  candidate,
+  isLoading,
+  isError,
+  notes,
+  notesLoading,
+  notesSubmitting,
+  onAddNote,
+}: CandidateDetailViewProps) {
   if (isLoading) {
     return (
       <PageContainer maxWidth="md">
@@ -96,6 +105,13 @@ export default function CandidateDetailView({ candidate, isLoading, isError }: C
           </div>
         </ContactGrid>
       </DetailCard>
+
+      <CandidateNotes
+        notes={notes}
+        isLoading={notesLoading}
+        isSubmitting={notesSubmitting}
+        onAddNote={onAddNote}
+      />
     </PageContainer>
   );
 }
