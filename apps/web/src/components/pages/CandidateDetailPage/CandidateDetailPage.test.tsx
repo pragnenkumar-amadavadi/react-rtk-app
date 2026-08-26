@@ -1,12 +1,17 @@
 import { screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { toCandidateId, type Candidate } from '@repo/types'
 import { renderWithTheme } from '../../../tests/utils'
-import { useCandidateQuery } from '../../../features/candidates/candidateQueries'
+import {
+  useCandidateQuery,
+  useUpdateCandidateStatusMutation,
+} from '../../../features/candidates/candidateQueries'
 import CandidateDetailPage from './CandidateDetailPage.component'
 
 // Factory prevents loading the real module chain (→ axiosClient → config → import.meta.env)
 jest.mock('../../../features/candidates/candidateQueries', () => ({
   useCandidateQuery: jest.fn(),
+  useUpdateCandidateStatusMutation: jest.fn(),
 }))
 
 // Provide a fixed :id param without needing a full router setup
@@ -29,11 +34,16 @@ const mockCandidate: Candidate = {
 }
 
 const mockQueryBase = { data: undefined, isLoading: false, isError: false }
+const mockUpdateStatusMutate = jest.fn()
 
 describe('CandidateDetailPage', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     jest.mocked(useCandidateQuery).mockReturnValue(mockQueryBase as unknown as ReturnType<typeof useCandidateQuery>)
+    jest.mocked(useUpdateCandidateStatusMutation).mockReturnValue({
+      mutate: mockUpdateStatusMutate,
+      isPending: false,
+    } as unknown as ReturnType<typeof useUpdateCandidateStatusMutation>)
   })
 
   it('passes isLoading to the view — shows spinner', async () => {
@@ -53,5 +63,14 @@ describe('CandidateDetailPage', () => {
     renderWithTheme(<CandidateDetailPage />)
     expect(await screen.findByText('Jane Smith')).toBeInTheDocument()
     expect(await screen.findByText('jane@example.com')).toBeInTheDocument()
+  })
+
+  it('calls the status mutation with the route id and target status', async () => {
+    const user = userEvent.setup()
+    jest.mocked(useCandidateQuery).mockReturnValue({ ...mockQueryBase, data: mockCandidate } as unknown as ReturnType<typeof useCandidateQuery>)
+    renderWithTheme(<CandidateDetailPage />)
+
+    await user.click(await screen.findByRole('button', { name: 'Mark as Hired' }))
+    expect(mockUpdateStatusMutate).toHaveBeenCalledWith({ id: '42', status: 'hired' })
   })
 })

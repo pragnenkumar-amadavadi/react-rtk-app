@@ -16,3 +16,14 @@ export async function fetchCandidateById(id: string): Promise<Candidate> {
   const { data } = await apiClient.get<Candidate>(`/candidates/${id}`);
   return data;
 }
+
+export async function updateCandidateStatus({
+  id,
+  status,
+}: {
+  id: string;
+  status: Candidate['status'];
+}): Promise<Candidate> {
+  const { data } = await apiClient.patch<Candidate>(`/candidates/${id}/status`, { status });
+  return data;
+}

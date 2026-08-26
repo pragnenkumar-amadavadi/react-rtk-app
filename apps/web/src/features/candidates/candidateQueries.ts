@@ -8,7 +8,12 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 import { queryClient } from '@repo/api-client';
-import { fetchCandidates, createCandidate, fetchCandidateById } from '../../api/candidatesApi';
+import {
+  fetchCandidates,
+  createCandidate,
+  fetchCandidateById,
+  updateCandidateStatus,
+} from '../../api/candidatesApi';
 import type { CandidateId, CandidateListParams } from '@repo/types';
 
 const LIMIT = 20;
@@ -96,6 +101,17 @@ export function useCreateCandidateMutation() {
     mutationFn: createCandidate,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: candidateKeys.lists() });
+    },
+  });
+}
+
+export function useUpdateCandidateStatusMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateCandidateStatus,
+    onSuccess: (_data, { id }) => {
+      queryClient.invalidateQueries({ queryKey: candidateKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: candidateKeys.detail(id) });
     },
   });
 }

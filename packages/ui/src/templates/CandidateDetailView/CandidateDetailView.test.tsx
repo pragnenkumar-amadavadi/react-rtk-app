@@ -1,4 +1,5 @@
 import { screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { toCandidateId, type Candidate } from '@repo/types'
 import { renderWithTheme } from '../../tests/utils'
 import CandidateDetailView from './CandidateDetailView.component'
@@ -20,9 +21,12 @@ const baseProps = {
   candidate: mockCandidate,
   isLoading: false,
   isError: false,
+  onStatusChange: jest.fn(),
 }
 
 describe('CandidateDetailView', () => {
+  beforeEach(() => jest.clearAllMocks())
+
   it('renders the candidate name', () => {
     renderWithTheme(<CandidateDetailView {...baseProps} />)
     expect(screen.getByText('Jane Smith')).toBeInTheDocument()
@@ -58,5 +62,17 @@ describe('CandidateDetailView', () => {
   it('shows an error alert when isError is true', async () => {
     renderWithTheme(<CandidateDetailView {...baseProps} candidate={undefined} isError={true} />)
     expect(await screen.findByRole('alert')).toBeInTheDocument()
+  })
+
+  it('offers the next-stage action for the candidate\'s status', () => {
+    renderWithTheme(<CandidateDetailView {...baseProps} />)
+    expect(screen.getByRole('button', { name: 'Mark as Hired' })).toBeInTheDocument()
+  })
+
+  it('calls onStatusChange when a status action is clicked', async () => {
+    const user = userEvent.setup()
+    renderWithTheme(<CandidateDetailView {...baseProps} />)
+    await user.click(screen.getByRole('button', { name: 'Mark as Hired' }))
+    expect(baseProps.onStatusChange).toHaveBeenCalledWith('hired')
   })
 })

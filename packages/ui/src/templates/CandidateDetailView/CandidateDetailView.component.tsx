@@ -1,4 +1,4 @@
-import StatusChip from '../../atoms/StatusChip';
+import CandidateStatusControl from '../../organisms/CandidateStatusControl';
 import type { CandidateDetailViewProps } from './CandidateDetailView.types';
 import {
   PageContainer,
@@ -21,7 +21,13 @@ import {
   DetailErrorAlert,
 } from './CandidateDetailView.styled';
 
-export default function CandidateDetailView({ candidate, isLoading, isError }: CandidateDetailViewProps) {
+export default function CandidateDetailView({
+  candidate,
+  isLoading,
+  isError,
+  isUpdatingStatus,
+  onStatusChange,
+}: CandidateDetailViewProps) {
   if (isLoading) {
     return (
       <PageContainer maxWidth="md">
@@ -67,7 +73,11 @@ export default function CandidateDetailView({ candidate, isLoading, isError }: C
           <HeaderInfo>
             <NameRow>
               <DetailName variant="h5">{candidate.name}</DetailName>
-              <StatusChip status={candidate.status} />
+              <CandidateStatusControl
+                status={candidate.status}
+                isUpdating={isUpdatingStatus}
+                onStatusChange={onStatusChange}
+              />
             </NameRow>
             <SubtitleText variant="body2">
               {candidate.position} · {expLabel}

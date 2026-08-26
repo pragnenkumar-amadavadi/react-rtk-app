@@ -6,3 +6,5 @@ export { default as ApplicationForm } from './ApplicationForm';
 export type { Props as ApplicationFormProps, FieldConfig } from './ApplicationForm';
 export { default as CandidateFilterBar } from './CandidateFilterBar';
 export type { CandidateFilterBarProps } from './CandidateFilterBar';
+export { default as CandidateStatusControl } from './CandidateStatusControl';
+export type { CandidateStatusControlProps } from './CandidateStatusControl';
