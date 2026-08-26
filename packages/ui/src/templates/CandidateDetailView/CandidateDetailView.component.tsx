@@ -1,4 +1,5 @@
 import CandidateStatusControl from '../../organisms/CandidateStatusControl';
+import CandidateNotes from '../../organisms/CandidateNotes';
 import type { CandidateDetailViewProps } from './CandidateDetailView.types';
 import {
   PageContainer,
@@ -27,6 +28,10 @@ export default function CandidateDetailView({
   isError,
   isUpdatingStatus,
   onStatusChange,
+  notes,
+  notesLoading,
+  notesSubmitting,
+  onAddNote,
 }: CandidateDetailViewProps) {
   if (isLoading) {
     return (
@@ -106,6 +111,13 @@ export default function CandidateDetailView({
           </div>
         </ContactGrid>
       </DetailCard>
+
+      <CandidateNotes
+        notes={notes}
+        isLoading={notesLoading}
+        isSubmitting={notesSubmitting}
+        onAddNote={onAddNote}
+      />
     </PageContainer>
   );
 }

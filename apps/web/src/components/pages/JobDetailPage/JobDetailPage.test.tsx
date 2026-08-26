@@ -1,11 +1,12 @@
 import { screen } from '@testing-library/react'
 import { renderWithTheme } from '../../../tests/utils'
-import { useJobQuery } from '../../../features/jobs/jobQueries'
+import { useJobQuery, useJobApplicants } from '../../../features/jobs/jobQueries'
 import JobDetailPage from './JobDetailPage.component'
 import { toJobId, type Job } from '@repo/types'
 
 jest.mock('../../../features/jobs/jobQueries', () => ({
   useJobQuery: jest.fn(),
+  useJobApplicants: jest.fn(),
 }))
 
 jest.mock('react-router-dom', () => ({
@@ -30,6 +31,7 @@ const mockJob: Job = {
 }
 
 const mockQueryBase = { data: undefined, isLoading: false, isError: false }
+const mockApplicantsQueryBase = { data: undefined, isLoading: false, isError: false }
 
 describe('JobDetailPage', () => {
   beforeEach(() => {
@@ -43,6 +45,9 @@ describe('JobDetailPage', () => {
       key: 'default',
     })
     jest.mocked(useJobQuery).mockReturnValue(mockQueryBase as unknown as ReturnType<typeof useJobQuery>)
+    jest.mocked(useJobApplicants).mockReturnValue(
+      mockApplicantsQueryBase as unknown as ReturnType<typeof useJobApplicants>,
+    )
   })
 
   it('shows a loading spinner when the query is loading', async () => {

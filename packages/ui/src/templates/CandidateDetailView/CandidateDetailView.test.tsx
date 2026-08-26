@@ -1,6 +1,6 @@
 import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { toCandidateId, type Candidate } from '@repo/types'
+import { toCandidateId, type Candidate, type CandidateNote } from '@repo/types'
 import { renderWithTheme } from '../../tests/utils'
 import CandidateDetailView from './CandidateDetailView.component'
 
@@ -17,11 +17,19 @@ const mockCandidate: Candidate = {
   appliedAt: '2026-05-15T09:00:00Z',
 }
 
+const mockNotes: CandidateNote[] = [
+  { id: 1, candidateId: toCandidateId(42), body: 'Great communicator.', createdAt: '2026-05-16T10:00:00Z' },
+]
+
 const baseProps = {
   candidate: mockCandidate,
   isLoading: false,
   isError: false,
   onStatusChange: jest.fn(),
+  notes: mockNotes,
+  notesLoading: false,
+  notesSubmitting: false,
+  onAddNote: jest.fn(),
 }
 
 describe('CandidateDetailView', () => {
@@ -74,5 +82,22 @@ describe('CandidateDetailView', () => {
     renderWithTheme(<CandidateDetailView {...baseProps} />)
     await user.click(screen.getByRole('button', { name: 'Mark as Hired' }))
     expect(baseProps.onStatusChange).toHaveBeenCalledWith('hired')
+  })
+
+  it('renders the notes section with existing notes', () => {
+    renderWithTheme(<CandidateDetailView {...baseProps} />)
+    expect(screen.getByText('Notes')).toBeInTheDocument()
+    expect(screen.getByText('Great communicator.')).toBeInTheDocument()
+  })
+
+  it('calls onAddNote with the trimmed input when the note form is submitted', async () => {
+    const onAddNote = jest.fn()
+    const user = userEvent.setup()
+    renderWithTheme(<CandidateDetailView {...baseProps} onAddNote={onAddNote} />)
+
+    await user.type(screen.getByPlaceholderText(/add a note/i), '  Follow up next week  ')
+    await user.click(screen.getByRole('button', { name: /add note/i }))
+
+    expect(onAddNote).toHaveBeenCalledWith('Follow up next week')
   })
 })

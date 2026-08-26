@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import JobApplicants from '../../organisms/JobApplicants';
 import type { Props } from './JobDetailView.types';
 import {
   PageContainer,
@@ -20,7 +21,15 @@ import {
   SuccessAlert,
 } from './JobDetailView.styled';
 
-export default function JobDetailView({ job, isLoading, isError, applied = false }: Props) {
+export default function JobDetailView({
+  job,
+  isLoading,
+  isError,
+  applied = false,
+  applicants,
+  applicantsLoading,
+  applicantsError,
+}: Props) {
   const navigate = useNavigate();
 
   if (isLoading) {
@@ -86,6 +95,8 @@ export default function JobDetailView({ job, isLoading, isError, applied = false
           Apply Now
         </ApplyButton>
       )}
+
+      <JobApplicants applicants={applicants} isLoading={applicantsLoading} isError={applicantsError} />
     </PageContainer>
   );
 }
