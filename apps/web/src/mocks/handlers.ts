@@ -42,11 +42,12 @@ function findById<T extends { id: unknown }>(items: T[], id: T['id']): FindResul
 }
 
 // Mirrors the BE's candidate.controller.ts filtering so MSW (dev:mock + integration
-// tests) behaves like the real API. `status[]` matches axios's default bracket-array
-// param serialization for a `status: Candidate['status'][]` query param.
+// tests) behaves like the real API. `status` is a single comma-separated value —
+// see candidatesApi.ts's fetchCandidates for why (Express 5's default query
+// parser doesn't parse bracket/array-style params).
 function filterCandidates(items: Candidate[], url: URL): Candidate[] {
   const search = (url.searchParams.get('search') ?? '').trim().toLowerCase();
-  const statusFilter = url.searchParams.getAll('status[]');
+  const statusFilter = (url.searchParams.get('status') ?? '').split(',').filter(Boolean);
 
   let filtered = items;
   if (search) {

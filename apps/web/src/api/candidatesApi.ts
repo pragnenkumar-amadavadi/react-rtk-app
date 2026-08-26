@@ -9,7 +9,14 @@ import type {
 import type { CandidateFormValues } from '@repo/ui';
 
 export async function fetchCandidates(params: CandidateListParams): Promise<CandidateListResponse> {
-  const { data } = await apiClient.get<CandidateListResponse>('/candidates', { params });
+  // Sent as a single comma-separated value rather than axios's default array
+  // serialization (`status[]=a&status[]=b`) — Express 5's default "simple"
+  // query parser (Node's built-in querystring) doesn't parse bracket notation
+  // into an array, so `status[]=...` would silently never match server-side.
+  const { status, ...rest } = params;
+  const { data } = await apiClient.get<CandidateListResponse>('/candidates', {
+    params: { ...rest, status: status && status.length > 0 ? status.join(',') : undefined },
+  });
   return data;
 }
 
