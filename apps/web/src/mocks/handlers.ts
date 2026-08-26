@@ -5,6 +5,7 @@ import type { CandidateFormValues } from '@repo/ui';
 import {
   toCandidateId,
   toJobId,
+  type BulkCandidateStatusResult,
   type Candidate,
   type CandidateListResponse,
   type ApplicationPayload,
@@ -14,6 +15,8 @@ import {
   type PaginationParams,
   type FindResult,
 } from '@repo/types';
+
+const VALID_STATUSES: Candidate['status'][] = ['applied', 'screening', 'interview', 'offer', 'hired', 'rejected'];
 
 function paginate<T>(items: T[], page: number, limit: number): PaginatedResponse<T> {
   const start = (page - 1) * limit;
@@ -87,6 +90,41 @@ export const handlers = [
     candidates.unshift(newCandidate);
     return HttpResponse.json(newCandidate, { status: 201 });
   }),
+
+  http.patch<{ id: string }, { status: Candidate['status'] }>(
+    '/api/candidates/:id/status',
+    async ({ request, params }) => {
+      const result = findById(candidates, toCandidateId(Number(params.id)));
+      if (!result.found) return HttpResponse.json({ message: 'Candidate not found' }, { status: 404 });
+
+      const { status } = await request.json();
+      if (!VALID_STATUSES.includes(status)) {
+        return HttpResponse.json({ message: 'Invalid status' }, { status: 400 });
+      }
+
+      result.record.status = status;
+      return HttpResponse.json(result.record);
+    },
+  ),
+
+  http.patch<PathParams, { ids: number[]; status: Candidate['status'] }>(
+    '/api/candidates/bulk-status',
+    async ({ request }) => {
+      const { ids, status } = await request.json();
+      if (!VALID_STATUSES.includes(status)) {
+        return HttpResponse.json({ message: 'Invalid status' }, { status: 400 });
+      }
+
+      const results: BulkCandidateStatusResult[] = ids.map((id) => {
+        const result = findById(candidates, toCandidateId(id));
+        if (!result.found) return { id: toCandidateId(id), success: false, error: `Candidate with id ${id} not found` };
+        result.record.status = status;
+        return { id: toCandidateId(id), success: true, candidate: result.record };
+      });
+
+      return HttpResponse.json({ results });
+    },
+  ),
 
   http.get('/api/jobs', ({ request }) => {
     const { page, limit } = getPageParams(new URL(request.url));

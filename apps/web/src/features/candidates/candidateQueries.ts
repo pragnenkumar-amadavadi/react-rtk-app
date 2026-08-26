@@ -15,7 +15,7 @@ import {
   updateCandidateStatus,
   bulkUpdateCandidateStatus,
 } from '../../api/candidatesApi';
-import type { CandidateId, CandidateListParams } from '@repo/types';
+import type { Candidate, CandidateId, CandidateListParams } from '@repo/types';
 
 const LIMIT = 20;
 
@@ -106,11 +106,29 @@ export function useCreateCandidateMutation() {
   });
 }
 
+// Optimistic — a deliberate, scoped exception to preferring invalidateQueries
+// (see CLAUDE.md section 9): this is the app's highest-frequency interaction,
+// so the detail cache is patched immediately in onMutate and rolled back in
+// onError if the request fails. onSettled still resyncs from the server,
+// which is also what busts the list cache (not optimistically patched here).
 export function useUpdateCandidateStatusMutation() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: updateCandidateStatus,
-    onSuccess: (_data, { id }) => {
+    onMutate: async ({ id, status }) => {
+      await queryClient.cancelQueries({ queryKey: candidateKeys.detail(id) });
+      const previousCandidate = queryClient.getQueryData<Candidate>(candidateKeys.detail(id));
+      if (previousCandidate) {
+        queryClient.setQueryData<Candidate>(candidateKeys.detail(id), { ...previousCandidate, status });
+      }
+      return { previousCandidate };
+    },
+    onError: (_err, { id }, context) => {
+      if (context?.previousCandidate) {
+        queryClient.setQueryData(candidateKeys.detail(id), context.previousCandidate);
+      }
+    },
+    onSettled: (_data, _err, { id }) => {
       queryClient.invalidateQueries({ queryKey: candidateKeys.lists() });
       queryClient.invalidateQueries({ queryKey: candidateKeys.detail(id) });
     },
