@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense, useMemo, useState } from 'react';
 import { Virtuoso } from 'react-virtuoso';
 import AddIcon from '@mui/icons-material/Add';
 import CandidateCard from '../../molecules/CandidateCard';
@@ -101,8 +101,21 @@ export default function CandidateListView({
   isBulkUpdating,
 }: CandidateListViewProps) {
   const isInitialLoading = isLoading && candidates.length === 0;
-  const allVisibleSelected = candidates.length > 0 && candidates.every((c) => selectedIds.has(c.id));
-  const someVisibleSelected = candidates.some((c) => selectedIds.has(c.id));
+
+  // Single pass over `candidates` (which only grows via infinite scroll) for
+  // both flags, memoized so toggling one checkbox doesn't rescan everyone
+  // already loaded on every render.
+  const { allVisibleSelected, someVisibleSelected } = useMemo(() => {
+    if (candidates.length === 0) return { allVisibleSelected: false, someVisibleSelected: false };
+    let selectedCount = 0;
+    for (const c of candidates) {
+      if (selectedIds.has(c.id)) selectedCount += 1;
+    }
+    return {
+      allVisibleSelected: selectedCount === candidates.length,
+      someVisibleSelected: selectedCount > 0,
+    };
+  }, [candidates, selectedIds]);
 
   // Mount the dialog lazily on first open, then keep it mounted so MUI's
   // close (fade-out) transition still plays on subsequent closes.

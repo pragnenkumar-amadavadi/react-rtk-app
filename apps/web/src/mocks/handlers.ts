@@ -5,6 +5,7 @@ import type { CandidateFormValues } from '@repo/ui';
 import {
   toCandidateId,
   toJobId,
+  CANDIDATE_STATUSES,
   type BulkCandidateStatusResult,
   type Candidate,
   type CandidateListResponse,
@@ -20,10 +21,8 @@ import {
   type DashboardStats,
 } from '@repo/types';
 
-const VALID_STATUSES: Candidate['status'][] = ['applied', 'screening', 'interview', 'offer', 'hired', 'rejected'];
-
 function computeDashboardStats(): DashboardStats {
-  const candidateStatusCounts = VALID_STATUSES.reduce((acc, status) => {
+  const candidateStatusCounts = CANDIDATE_STATUSES.reduce((acc, status) => {
     acc[status] = 0;
     return acc;
   }, {} as Record<Candidate['status'], number>);
@@ -75,6 +74,10 @@ function findById<T extends { id: unknown }>(items: T[], id: T['id']): FindResul
   return record ? { found: true, record } : { found: false };
 }
 
+function notFound(message: string) {
+  return HttpResponse.json({ message }, { status: 404 });
+}
+
 // Mirrors the BE's candidate.controller.ts filtering so MSW (dev:mock + integration
 // tests) behaves like the real API. `status` is a single comma-separated value —
 // see candidatesApi.ts's fetchCandidates for why (Express 5's default query
@@ -83,19 +86,14 @@ function filterCandidates(items: Candidate[], url: URL): Candidate[] {
   const search = (url.searchParams.get('search') ?? '').trim().toLowerCase();
   const statusFilter = (url.searchParams.get('status') ?? '').split(',').filter(Boolean);
 
-  let filtered = items;
-  if (search) {
-    filtered = filtered.filter(
-      (c) =>
+  return items.filter(
+    (c) =>
+      (!search ||
         c.name.toLowerCase().includes(search) ||
         c.email.toLowerCase().includes(search) ||
-        c.position.toLowerCase().includes(search),
-    );
-  }
-  if (statusFilter.length > 0) {
-    filtered = filtered.filter((c) => statusFilter.includes(c.status));
-  }
-  return filtered;
+        c.position.toLowerCase().includes(search)) &&
+      (statusFilter.length === 0 || statusFilter.includes(c.status)),
+  );
 }
 
 let nextApplicationId = 1000;
@@ -113,7 +111,7 @@ export const handlers = [
 
   http.get<{ id: string }>('/api/candidates/:id', ({ params }) => {
     const result = findById(candidates, toCandidateId(Number(params.id)));
-    if (!result.found) return HttpResponse.json({ message: 'Candidate not found' }, { status: 404 });
+    if (!result.found) return notFound('Candidate not found');
     return HttpResponse.json(result.record);
   }),
 
@@ -133,10 +131,10 @@ export const handlers = [
     '/api/candidates/:id/status',
     async ({ request, params }) => {
       const result = findById(candidates, toCandidateId(Number(params.id)));
-      if (!result.found) return HttpResponse.json({ message: 'Candidate not found' }, { status: 404 });
+      if (!result.found) return notFound('Candidate not found');
 
       const { status } = await request.json();
-      if (!VALID_STATUSES.includes(status)) {
+      if (!CANDIDATE_STATUSES.includes(status)) {
         return HttpResponse.json({ message: 'Invalid status' }, { status: 400 });
       }
 
@@ -149,15 +147,16 @@ export const handlers = [
     '/api/candidates/bulk-status',
     async ({ request }) => {
       const { ids, status } = await request.json();
-      if (!VALID_STATUSES.includes(status)) {
+      if (!CANDIDATE_STATUSES.includes(status)) {
         return HttpResponse.json({ message: 'Invalid status' }, { status: 400 });
       }
 
+      const byId = new Map(candidates.map((c) => [c.id as number, c]));
       const results: BulkCandidateStatusResult[] = ids.map((id) => {
-        const result = findById(candidates, toCandidateId(id));
-        if (!result.found) return { id: toCandidateId(id), success: false, error: `Candidate with id ${id} not found` };
-        result.record.status = status;
-        return { id: toCandidateId(id), success: true, candidate: result.record };
+        const candidate = byId.get(id);
+        if (!candidate) return { id: toCandidateId(id), success: false, error: `Candidate with id ${id} not found` };
+        candidate.status = status;
+        return { id: toCandidateId(id), success: true, candidate };
       });
 
       return HttpResponse.json({ results });
@@ -172,7 +171,7 @@ export const handlers = [
 
   http.get<{ id: string }>('/api/jobs/:id', ({ params }) => {
     const result = findById(jobs, toJobId(Number(params.id)));
-    if (!result.found) return HttpResponse.json({ message: 'Job not found' }, { status: 404 });
+    if (!result.found) return notFound('Job not found');
     return HttpResponse.json(result.record);
   }),
 
@@ -181,7 +180,7 @@ export const handlers = [
     async ({ request, params }) => {
       const jobId = toJobId(Number(params.jobId));
       const job = findById(jobs, jobId);
-      if (!job.found) return HttpResponse.json({ message: 'Job not found' }, { status: 404 });
+      if (!job.found) return notFound('Job not found');
 
       const { name, experience } = await request.json();
 
@@ -224,7 +223,7 @@ export const handlers = [
   http.get<{ id: string }>('/api/jobs/:id/applicants', ({ params }) => {
     const jobId = toJobId(Number(params.id));
     const job = findById(jobs, jobId);
-    if (!job.found) return HttpResponse.json({ message: 'Job not found' }, { status: 404 });
+    if (!job.found) return notFound('Job not found');
 
     const applicantIds = new Set(
       jobApplications.filter((a) => a.jobId === jobId).map((a) => a.candidateId),
@@ -237,7 +236,7 @@ export const handlers = [
   http.get<{ id: string }>('/api/candidates/:id/notes', ({ params }) => {
     const candidateId = toCandidateId(Number(params.id));
     if (!findById(candidates, candidateId).found) {
-      return HttpResponse.json({ message: 'Candidate not found' }, { status: 404 });
+      return notFound('Candidate not found');
     }
 
     const sorted = candidateNotes
@@ -251,7 +250,7 @@ export const handlers = [
     async ({ request, params }) => {
       const candidateId = toCandidateId(Number(params.id));
       if (!findById(candidates, candidateId).found) {
-        return HttpResponse.json({ message: 'Candidate not found' }, { status: 404 });
+        return notFound('Candidate not found');
       }
 
       const { body } = await request.json();

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import type { Candidate } from '@repo/types';
+import { CANDIDATE_STATUSES, type Candidate } from '@repo/types';
+import { STATUS_LABELS } from '../../atoms/StatusChip';
 import type { Props } from './CandidateFilterBar.types';
 import {
   FilterBarRoot,
@@ -9,15 +10,6 @@ import {
   FilterChip,
   CountText,
 } from './CandidateFilterBar.styled';
-
-const STATUS_OPTIONS: { value: Candidate['status']; label: string }[] = [
-  { value: 'applied', label: 'Applied' },
-  { value: 'screening', label: 'Screening' },
-  { value: 'interview', label: 'Interview' },
-  { value: 'offer', label: 'Offer' },
-  { value: 'hired', label: 'Hired' },
-  { value: 'rejected', label: 'Rejected' },
-];
 
 const SEARCH_DEBOUNCE_MS = 300;
 
@@ -51,10 +43,10 @@ export default function CandidateFilterBar({
         slotProps={{ input: { startAdornment: <SearchIconAdornment /> } }}
       />
       <StatusChipRow>
-        {STATUS_OPTIONS.map(({ value, label }) => (
+        {CANDIDATE_STATUSES.map((value) => (
           <FilterChip
             key={value}
-            label={label}
+            label={STATUS_LABELS[value]}
             clickable
             size="small"
             color={status.includes(value) ? 'primary' : 'default'}

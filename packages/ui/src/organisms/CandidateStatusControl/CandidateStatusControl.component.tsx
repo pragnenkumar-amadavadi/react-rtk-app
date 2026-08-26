@@ -1,5 +1,5 @@
 import type { Candidate } from '@repo/types';
-import StatusChip from '../../atoms/StatusChip';
+import StatusChip, { STATUS_LABELS } from '../../atoms/StatusChip';
 import type { Props } from './CandidateStatusControl.types';
 import { StatusControlRoot, ActionsRow, ActionButton } from './CandidateStatusControl.styled';
 
@@ -15,14 +15,16 @@ const NEXT_STATUSES: Record<Candidate['status'], Candidate['status'][]> = {
   rejected: [],
 };
 
-const ACTION_LABELS: Record<Candidate['status'], string> = {
-  applied: 'Move to Applied',
-  screening: 'Move to Screening',
-  interview: 'Move to Interview',
-  offer: 'Move to Offer',
+// Verb-phrase overrides for the two stages that don't read naturally as
+// "Move to X" — every other stage derives its label from STATUS_LABELS.
+const ACTION_LABEL_OVERRIDES: Partial<Record<Candidate['status'], string>> = {
   hired: 'Mark as Hired',
   rejected: 'Reject',
 };
+
+function actionLabelFor(status: Candidate['status']): string {
+  return ACTION_LABEL_OVERRIDES[status] ?? `Move to ${STATUS_LABELS[status]}`;
+}
 
 export default function CandidateStatusControl({ status, isUpdating = false, onStatusChange }: Props) {
   const nextStatuses = NEXT_STATUSES[status];
@@ -41,7 +43,7 @@ export default function CandidateStatusControl({ status, isUpdating = false, onS
               disabled={isUpdating}
               onClick={() => onStatusChange(next)}
             >
-              {ACTION_LABELS[next]}
+              {actionLabelFor(next)}
             </ActionButton>
           ))}
         </ActionsRow>
