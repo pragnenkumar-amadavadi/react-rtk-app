@@ -5,3 +5,4 @@ export * from './candidate';
 export * from './job';
 export * from './note';
 export * from './application';
+export * from './dashboard';

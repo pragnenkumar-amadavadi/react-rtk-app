@@ -4,3 +4,7 @@ export { default as JobCard } from './JobCard';
 export type { Props as JobCardProps } from './JobCard';
 export { default as StepIndicator } from './StepIndicator';
 export type { Props as StepIndicatorProps } from './StepIndicator';
+export { default as StatTile } from './StatTile';
+export type { Props as StatTileProps } from './StatTile';
+export { default as StatusFunnelChart } from './StatusFunnelChart';
+export type { Props as StatusFunnelChartProps } from './StatusFunnelChart';

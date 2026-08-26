@@ -7,3 +7,4 @@ export const CandidateDetailPage = lazy(() => import('../components/pages/Candid
 export const JobListPage = lazy(() => import('../components/pages/JobListPage'));
 export const JobDetailPage = lazy(() => import('../components/pages/JobDetailPage'));
 export const ApplicationPage = lazy(() => import('../components/pages/ApplicationPage'));
+export const DashboardPage = lazy(() => import('../components/pages/DashboardPage'));
