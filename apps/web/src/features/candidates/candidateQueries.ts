@@ -13,6 +13,7 @@ import {
   createCandidate,
   fetchCandidateById,
   updateCandidateStatus,
+  bulkUpdateCandidateStatus,
 } from '../../api/candidatesApi';
 import type { CandidateId, CandidateListParams } from '@repo/types';
 
@@ -112,6 +113,16 @@ export function useUpdateCandidateStatusMutation() {
     onSuccess: (_data, { id }) => {
       queryClient.invalidateQueries({ queryKey: candidateKeys.lists() });
       queryClient.invalidateQueries({ queryKey: candidateKeys.detail(id) });
+    },
+  });
+}
+
+export function useBulkUpdateCandidateStatusMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: bulkUpdateCandidateStatus,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: candidateKeys.lists() });
     },
   });
 }

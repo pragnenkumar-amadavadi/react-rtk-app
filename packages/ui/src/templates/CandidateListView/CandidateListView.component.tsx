@@ -3,6 +3,7 @@ import { Virtuoso } from 'react-virtuoso';
 import AddIcon from '@mui/icons-material/Add';
 import CandidateCard from '../../molecules/CandidateCard';
 import CandidateFilterBar from '../../organisms/CandidateFilterBar';
+import BulkStatusToolbar from '../../organisms/BulkStatusToolbar';
 import type { CandidateListViewProps } from './CandidateListView.types';
 
 // Lazy — pulls in react-hook-form + zod + MUI form fields, only needed once the
@@ -31,6 +32,11 @@ import {
   ListSpinner,
   EndMessage,
   CardLink,
+  CandidateRow,
+  RowCheckbox,
+  SelectionBar,
+  SelectAllControl,
+  SelectAllCheckbox,
 } from './CandidateListView.styled';
 
 function CardSkeleton() {
@@ -87,8 +93,16 @@ export default function CandidateListView({
   onCardHover,
   onSearchChange,
   onStatusChange,
+  selectedIds,
+  onToggleSelect,
+  onSelectAllVisible,
+  onClearSelection,
+  onBulkStatusChange,
+  isBulkUpdating,
 }: CandidateListViewProps) {
   const isInitialLoading = isLoading && candidates.length === 0;
+  const allVisibleSelected = candidates.length > 0 && candidates.every((c) => selectedIds.has(c.id));
+  const someVisibleSelected = candidates.some((c) => selectedIds.has(c.id));
 
   // Mount the dialog lazily on first open, then keep it mounted so MUI's
   // close (fade-out) transition still plays on subsequent closes.
@@ -129,23 +143,50 @@ export default function CandidateListView({
           ))}
         </SkeletonList>
       ) : (
-        <Virtuoso
-          useWindowScroll
-          data={candidates}
-          endReached={() => { if (hasMore) loadMore(); }}
-          overscan={400}
-          itemContent={(_, candidate) => (
-            <CardLink
-              to={`/candidates/${candidate.id}`}
-              onMouseEnter={() => onCardHover(candidate.id)}
-            >
-              <CandidateCard candidate={candidate} />
-            </CardLink>
-          )}
-          components={{
-            Footer: () => <ListFooter isLoading={isLoading} hasMore={hasMore} />,
-          }}
-        />
+        <>
+          <SelectionBar>
+            <SelectAllControl
+              control={
+                <SelectAllCheckbox
+                  checked={allVisibleSelected}
+                  indeterminate={someVisibleSelected && !allVisibleSelected}
+                  onChange={onSelectAllVisible}
+                />
+              }
+              label="Select all visible"
+            />
+            <BulkStatusToolbar
+              selectedCount={selectedIds.size}
+              isUpdating={isBulkUpdating}
+              onMoveToStatus={onBulkStatusChange}
+              onClear={onClearSelection}
+            />
+          </SelectionBar>
+
+          <Virtuoso
+            useWindowScroll
+            data={candidates}
+            endReached={() => { if (hasMore) loadMore(); }}
+            overscan={400}
+            itemContent={(_, candidate) => (
+              <CandidateRow>
+                <RowCheckbox
+                  checked={selectedIds.has(candidate.id)}
+                  onChange={() => onToggleSelect(candidate.id)}
+                />
+                <CardLink
+                  to={`/candidates/${candidate.id}`}
+                  onMouseEnter={() => onCardHover(candidate.id)}
+                >
+                  <CandidateCard candidate={candidate} />
+                </CardLink>
+              </CandidateRow>
+            )}
+            components={{
+              Footer: () => <ListFooter isLoading={isLoading} hasMore={hasMore} />,
+            }}
+          />
+        </>
       )}
 
       {hasOpenedDialog && (

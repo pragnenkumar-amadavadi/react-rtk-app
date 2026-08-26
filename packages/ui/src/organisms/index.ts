@@ -8,3 +8,5 @@ export { default as CandidateFilterBar } from './CandidateFilterBar';
 export type { CandidateFilterBarProps } from './CandidateFilterBar';
 export { default as CandidateStatusControl } from './CandidateStatusControl';
 export type { CandidateStatusControlProps } from './CandidateStatusControl';
+export { default as BulkStatusToolbar } from './BulkStatusToolbar';
+export type { BulkStatusToolbarProps } from './BulkStatusToolbar';

@@ -82,6 +82,11 @@ const meta = {
     onCardHover: fn(),
     onSearchChange: fn(),
     onStatusChange: fn(),
+    selectedIds: new Set<Candidate['id']>(),
+    onToggleSelect: fn(),
+    onSelectAllVisible: fn(),
+    onClearSelection: fn(),
+    onBulkStatusChange: fn(),
   },
 } satisfies Meta<typeof CandidateListView>;
 
@@ -97,6 +102,19 @@ export const ViewMode: Story = {
     hasMore: true,
     isError: false,
     dialogOpen: false,
+  },
+};
+
+export const WithSelection: Story = {
+  name: 'Candidates selected (bulk toolbar)',
+  args: {
+    candidates: mockCandidates,
+    total: mockCandidates.length,
+    isLoading: false,
+    hasMore: true,
+    isError: false,
+    dialogOpen: false,
+    selectedIds: new Set([mockCandidates[0].id, mockCandidates[1].id]),
   },
 };
 

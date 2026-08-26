@@ -1,7 +1,12 @@
 import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { toCandidateId } from '@repo/types'
 import { renderWithTheme } from '../../../tests/utils'
 import { useCandidateList } from '../../../features/candidates/useCandidateList'
+import {
+  usePrefetchCandidate,
+  useBulkUpdateCandidateStatusMutation,
+} from '../../../features/candidates/candidateQueries'
 import CandidateListPage from './CandidateListPage.component'
 
 // Factory prevents Jest from loading the real module chain (→ axiosClient → config → import.meta.env)
@@ -10,7 +15,8 @@ jest.mock('../../../features/candidates/useCandidateList', () => ({
 }))
 
 jest.mock('../../../features/candidates/candidateQueries', () => ({
-  usePrefetchCandidate: jest.fn(() => jest.fn()),
+  usePrefetchCandidate: jest.fn(),
+  useBulkUpdateCandidateStatusMutation: jest.fn(),
 }))
 
 jest.mock('react-virtuoso', () => ({
@@ -46,12 +52,23 @@ const mockHookBase = {
   status: [],
   onSearchChange: jest.fn(),
   onStatusChange: jest.fn(),
+  selectedIds: new Set<ReturnType<typeof toCandidateId>>(),
+  toggleSelect: jest.fn(),
+  selectAllVisible: jest.fn(),
+  clearSelection: jest.fn(),
 }
+
+const mockBulkMutate = jest.fn()
 
 describe('CandidateListPage', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     jest.mocked(useCandidateList).mockReturnValue(mockHookBase)
+    jest.mocked(usePrefetchCandidate).mockReturnValue(jest.fn())
+    jest.mocked(useBulkUpdateCandidateStatusMutation).mockReturnValue({
+      mutate: mockBulkMutate,
+      isPending: false,
+    } as unknown as ReturnType<typeof useBulkUpdateCandidateStatusMutation>)
   })
 
   it('renders the page title', () => {
@@ -76,5 +93,22 @@ describe('CandidateListPage', () => {
     renderWithTheme(<CandidateListPage />)
     await user.click(screen.getByRole('button', { name: /add candidate/i }))
     expect(await screen.findByRole('dialog')).toBeInTheDocument()
+  })
+
+  it('calls the bulk mutation with selected ids and clears selection on success', async () => {
+    const user = userEvent.setup()
+    jest.mocked(useCandidateList).mockReturnValue({
+      ...mockHookBase,
+      selectedIds: new Set([toCandidateId(1), toCandidateId(2)]),
+    })
+    renderWithTheme(<CandidateListPage />)
+
+    await user.click(screen.getByRole('button', { name: /move to/i }))
+    await user.click(await screen.findByRole('menuitem', { name: 'Rejected' }))
+
+    expect(mockBulkMutate).toHaveBeenCalledWith(
+      { ids: [1, 2], status: 'rejected' },
+      { onSuccess: mockHookBase.clearSelection },
+    )
   })
 })

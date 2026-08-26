@@ -1,5 +1,11 @@
 import { apiClient } from '@repo/api-client';
-import type { Candidate, CandidateListParams, CandidateListResponse } from '@repo/types';
+import type {
+  BulkCandidateStatusResponse,
+  Candidate,
+  CandidateId,
+  CandidateListParams,
+  CandidateListResponse,
+} from '@repo/types';
 import type { CandidateFormValues } from '@repo/ui';
 
 export async function fetchCandidates(params: CandidateListParams): Promise<CandidateListResponse> {
@@ -25,5 +31,19 @@ export async function updateCandidateStatus({
   status: Candidate['status'];
 }): Promise<Candidate> {
   const { data } = await apiClient.patch<Candidate>(`/candidates/${id}/status`, { status });
+  return data;
+}
+
+export async function bulkUpdateCandidateStatus({
+  ids,
+  status,
+}: {
+  ids: CandidateId[];
+  status: Candidate['status'];
+}): Promise<BulkCandidateStatusResponse> {
+  const { data } = await apiClient.patch<BulkCandidateStatusResponse>('/candidates/bulk-status', {
+    ids,
+    status,
+  });
   return data;
 }

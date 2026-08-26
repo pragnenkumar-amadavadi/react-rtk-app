@@ -3,8 +3,10 @@ import Alert from '@mui/material/Alert';
 import { Link } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import Checkbox from '@mui/material/Checkbox';
 import CircularProgress from '@mui/material/CircularProgress';
 import Container from '@mui/material/Container';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import Skeleton from '@mui/material/Skeleton';
 import Typography from '@mui/material/Typography';
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
@@ -108,6 +110,37 @@ export const EndMessage = styled(Typography)(({ theme }) => ({
 
 export const CardLink = styled(Link)({
   display: 'block',
+  flex: 1,
+  minWidth: 0,
   textDecoration: 'none',
   color: 'inherit',
 });
+
+export const CandidateRow = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'flex-start',
+  gap: theme.spacing(0.5),
+}));
+
+export const RowCheckbox = styled(Checkbox)(({ theme }) => ({
+  marginTop: theme.spacing(1),
+}));
+
+export const SelectionBar = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  flexWrap: 'wrap',
+  gap: theme.spacing(1),
+  marginBottom: theme.spacing(1.5),
+}));
+
+export const SelectAllCheckbox = styled(Checkbox)({});
+
+export const SelectAllControl = styled(FormControlLabel)(({ theme }) => ({
+  margin: 0,
+  '& .MuiFormControlLabel-label': {
+    color: theme.palette.text.secondary,
+    fontSize: theme.typography.body2.fontSize,
+  },
+}));

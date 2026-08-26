@@ -69,6 +69,11 @@ const baseProps = {
   onCardHover: jest.fn(),
   onSearchChange: jest.fn(),
   onStatusChange: jest.fn(),
+  selectedIds: new Set<Candidate['id']>(),
+  onToggleSelect: jest.fn(),
+  onSelectAllVisible: jest.fn(),
+  onClearSelection: jest.fn(),
+  onBulkStatusChange: jest.fn(),
 }
 
 describe('CandidateListView', () => {
@@ -131,5 +136,29 @@ describe('CandidateListView', () => {
     // Each candidate card is wrapped in a CardLink (<a>); first link is Alice (id=1)
     await user.hover(screen.getAllByRole('link')[0])
     expect(baseProps.onCardHover).toHaveBeenCalledWith(1)
+  })
+
+  it('calls onToggleSelect with the candidate id when its row checkbox is clicked', async () => {
+    const user = userEvent.setup()
+    renderWithTheme(<CandidateListView {...baseProps} />)
+    await user.click(screen.getAllByRole('checkbox')[1]) // [0] is "select all"
+    expect(baseProps.onToggleSelect).toHaveBeenCalledWith(1)
+  })
+
+  it('calls onSelectAllVisible when the select-all checkbox is clicked', async () => {
+    const user = userEvent.setup()
+    renderWithTheme(<CandidateListView {...baseProps} />)
+    await user.click(screen.getByRole('checkbox', { name: /select all visible/i }))
+    expect(baseProps.onSelectAllVisible).toHaveBeenCalledTimes(1)
+  })
+
+  it('shows the bulk status toolbar once a candidate is selected', () => {
+    renderWithTheme(<CandidateListView {...baseProps} selectedIds={new Set([toCandidateId(1)])} />)
+    expect(screen.getByText('1 selected')).toBeInTheDocument()
+  })
+
+  it('does not show the bulk status toolbar with nothing selected', () => {
+    renderWithTheme(<CandidateListView {...baseProps} />)
+    expect(screen.queryByText(/selected$/)).not.toBeInTheDocument()
   })
 })

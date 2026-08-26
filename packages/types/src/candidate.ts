@@ -26,3 +26,14 @@ export type CandidateListParams = PaginationParams & {
   search?: string;
   status?: Candidate['status'][];
 };
+
+export interface BulkCandidateStatusResult {
+  id: CandidateId;
+  success: boolean;
+  candidate?: Candidate;
+  error?: string;
+}
+
+export interface BulkCandidateStatusResponse {
+  results: BulkCandidateStatusResult[];
+}
