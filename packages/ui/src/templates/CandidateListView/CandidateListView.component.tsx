@@ -2,6 +2,7 @@ import { lazy, Suspense, useState } from 'react';
 import { Virtuoso } from 'react-virtuoso';
 import AddIcon from '@mui/icons-material/Add';
 import CandidateCard from '../../molecules/CandidateCard';
+import CandidateFilterBar from '../../organisms/CandidateFilterBar';
 import type { CandidateListViewProps } from './CandidateListView.types';
 
 // Lazy — pulls in react-hook-form + zod + MUI form fields, only needed once the
@@ -14,7 +15,6 @@ import {
   PageIcon,
   TitleBlock,
   PageTitle,
-  CandidateCount,
   AddButton,
   ErrorAlert,
   SkeletonList,
@@ -74,15 +74,19 @@ function ListFooter({ isLoading, hasMore }: { isLoading: boolean; hasMore: boole
 
 export default function CandidateListView({
   candidates,
+  total,
   isLoading,
   hasMore,
   isError,
   dialogOpen,
+  status,
   loadMore,
   onAddClick,
   onDialogClose,
   onDialogSubmit,
   onCardHover,
+  onSearchChange,
+  onStatusChange,
 }: CandidateListViewProps) {
   const isInitialLoading = isLoading && candidates.length === 0;
 
@@ -97,14 +101,20 @@ export default function CandidateListView({
         <PageIcon />
         <TitleBlock>
           <PageTitle variant="h5">Candidate List</PageTitle>
-          <CandidateCount variant="body2">
-            {candidates.length > 0 ? `Showing ${candidates.length} candidates` : 'Loading candidates…'}
-          </CandidateCount>
         </TitleBlock>
         <AddButton variant="contained" startIcon={<AddIcon />} onClick={onAddClick}>
           Add Candidate
         </AddButton>
       </PageHeader>
+
+      <CandidateFilterBar
+        status={status}
+        shownCount={candidates.length}
+        totalCount={total}
+        isInitialLoading={isInitialLoading}
+        onSearchChange={onSearchChange}
+        onStatusChange={onStatusChange}
+      />
 
       {isError && (
         <ErrorAlert severity="error">

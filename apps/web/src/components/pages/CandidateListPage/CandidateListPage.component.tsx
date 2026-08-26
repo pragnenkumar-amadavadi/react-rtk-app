@@ -4,22 +4,37 @@ import { usePrefetchCandidate } from '../../../features/candidates/candidateQuer
 import { CandidateListView } from '@repo/ui';
 
 export default function CandidateListPage() {
-  const { candidates, isLoading, hasMore, isError, loadMore, addCandidate } = useCandidateList();
+  const {
+    candidates,
+    total,
+    isLoading,
+    hasMore,
+    isError,
+    loadMore,
+    addCandidate,
+    status,
+    onSearchChange,
+    onStatusChange,
+  } = useCandidateList();
   const prefetchCandidate = usePrefetchCandidate();
   const [dialogOpen, setDialogOpen] = useState(false);
 
   return (
     <CandidateListView
       candidates={candidates}
+      total={total}
       isLoading={isLoading}
       hasMore={hasMore}
       isError={isError}
       dialogOpen={dialogOpen}
+      status={status}
       loadMore={loadMore}
       onAddClick={() => setDialogOpen(true)}
       onDialogClose={() => setDialogOpen(false)}
       onDialogSubmit={addCandidate}
       onCardHover={prefetchCandidate}
+      onSearchChange={onSearchChange}
+      onStatusChange={onStatusChange}
     />
   );
 }

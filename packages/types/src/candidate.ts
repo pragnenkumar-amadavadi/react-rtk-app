@@ -22,4 +22,7 @@ export interface Candidate {
 
 export type CandidateListResponse = PaginatedResponse<Candidate>;
 
-export type CandidateListParams = PaginationParams;
+export type CandidateListParams = PaginationParams & {
+  search?: string;
+  status?: Candidate['status'][];
+};

@@ -37,11 +37,15 @@ jest.mock('react-virtuoso', () => ({
 
 const mockHookBase = {
   candidates: [],
+  total: 0,
   isLoading: false,
   hasMore: false,
   isError: false,
   loadMore: jest.fn(),
   addCandidate: jest.fn(),
+  status: [],
+  onSearchChange: jest.fn(),
+  onStatusChange: jest.fn(),
 }
 
 describe('CandidateListPage', () => {

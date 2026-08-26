@@ -9,44 +9,55 @@ import {
 } from '@tanstack/react-query';
 import { queryClient } from '@repo/api-client';
 import { fetchCandidates, createCandidate, fetchCandidateById } from '../../api/candidatesApi';
-import type { CandidateId } from '@repo/types';
+import type { CandidateId, CandidateListParams } from '@repo/types';
 
 const LIMIT = 20;
+
+// The filter subset of CandidateListParams — page/limit are pagination
+// mechanics, not part of what makes one list "variant" different from another.
+export type CandidateListFilters = Pick<CandidateListParams, 'search' | 'status'>;
 
 // Query key factory — hierarchical so partial invalidation works at every level:
 //   invalidate candidateKeys.all     → busts everything (candidates)
 //   invalidate candidateKeys.lists() → busts every list variant (filtered, paginated, etc.)
+//   invalidate candidateKeys.list(f) → busts one exact filter combination
 export const candidateKeys = {
   all: ['candidates'] as const,
   lists: () => [...candidateKeys.all, 'list'] as const,
-  list: () => [...candidateKeys.lists()] as const,
+  list: (filters: CandidateListFilters = {}) => [...candidateKeys.lists(), filters] as const,
   details: () => [...candidateKeys.all, 'detail'] as const,
   detail: (id: string) => [...candidateKeys.details(), id] as const,
 };
 
 // Single source of truth for query config — shared by the hook, prefetch calls,
 // and route loaders so key / fn / pagination logic never drift apart.
-export const candidatesInfiniteQueryOptions = infiniteQueryOptions({
-  queryKey: candidateKeys.lists(),
-  queryFn: async ({ pageParam }) => {
-    const result = await fetchCandidates({ page: pageParam as number, limit: LIMIT });
-    // Seed the detail cache from list data so navigating to a candidate already in
-    // the list renders instantly instead of firing a redundant fetchCandidateById.
-    result.data.forEach((candidate) => {
-      queryClient.setQueryData(candidateKeys.detail(String(candidate.id)), candidate);
-    });
-    return result;
-  },
-  initialPageParam: 1,
-  getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.page + 1 : undefined),
-});
-
-export function useCandidatesQuery() {
-  return useInfiniteQuery(candidatesInfiniteQueryOptions);
+function buildCandidatesInfiniteQueryOptions(filters: CandidateListFilters = {}) {
+  return infiniteQueryOptions({
+    queryKey: candidateKeys.list(filters),
+    queryFn: async ({ pageParam }) => {
+      const result = await fetchCandidates({ page: pageParam as number, limit: LIMIT, ...filters });
+      // Seed the detail cache from list data so navigating to a candidate already in
+      // the list renders instantly instead of firing a redundant fetchCandidateById.
+      result.data.forEach((candidate) => {
+        queryClient.setQueryData(candidateKeys.detail(String(candidate.id)), candidate);
+      });
+      return result;
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.page + 1 : undefined),
+  });
 }
 
-// Returns a stable callback that warms the cache for the candidates list.
-// No-ops when data is already fresh (respects global staleTime = 5 min).
+// Unfiltered variant — used by the route loader and nav-hover prefetch, neither
+// of which know about the in-page filter state.
+export const candidatesInfiniteQueryOptions = buildCandidatesInfiniteQueryOptions();
+
+export function useCandidatesQuery(filters: CandidateListFilters = {}) {
+  return useInfiniteQuery(buildCandidatesInfiniteQueryOptions(filters));
+}
+
+// Returns a stable callback that warms the cache for the unfiltered candidates
+// list. No-ops when data is already fresh (respects global staleTime = 5 min).
 // Use on nav-link hover or in route loaders to reduce perceived load time.
 export function usePrefetchCandidates() {
   const queryClient = useQueryClient();

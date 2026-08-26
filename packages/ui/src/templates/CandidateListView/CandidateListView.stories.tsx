@@ -74,11 +74,14 @@ const meta = {
   },
   tags: ['autodocs'],
   args: {
+    status: [],
     loadMore: fn(),
     onAddClick: fn(),
     onDialogClose: fn(),
     onDialogSubmit: fn(),
     onCardHover: fn(),
+    onSearchChange: fn(),
+    onStatusChange: fn(),
   },
 } satisfies Meta<typeof CandidateListView>;
 
@@ -89,6 +92,7 @@ export const ViewMode: Story = {
   name: 'View mode',
   args: {
     candidates: mockCandidates,
+    total: mockCandidates.length,
     isLoading: false,
     hasMore: true,
     isError: false,
@@ -100,6 +104,7 @@ export const EditMode: Story = {
   name: 'Edit mode (dialog open)',
   args: {
     candidates: mockCandidates,
+    total: mockCandidates.length,
     isLoading: false,
     hasMore: true,
     isError: false,
@@ -111,6 +116,7 @@ export const SkeletonLoading: Story = {
   name: 'Loading (skeleton)',
   args: {
     candidates: [],
+    total: 0,
     isLoading: true,
     hasMore: false,
     isError: false,
@@ -122,6 +128,7 @@ export const LoadingMore: Story = {
   name: 'Loading more (spinner)',
   args: {
     candidates: mockCandidates,
+    total: mockCandidates.length,
     isLoading: true,
     hasMore: true,
     isError: false,
@@ -133,6 +140,7 @@ export const Error: Story = {
   name: 'Error state',
   args: {
     candidates: [],
+    total: 0,
     isLoading: false,
     hasMore: false,
     isError: true,
@@ -142,6 +150,7 @@ export const Error: Story = {
 
 const breakpointArgs = {
   candidates: mockCandidates,
+  total: mockCandidates.length,
   isLoading: false,
   hasMore: true,
   isError: false,

@@ -65,7 +65,30 @@ describe('CandidateListPage (integration)', () => {
 
     expect(await screen.findByText('Ava Johnson')).toBeInTheDocument()
     expect(screen.getByText('ava.johnson0@example.com')).toBeInTheDocument()
-    expect(screen.getByText('Showing 20 candidates')).toBeInTheDocument()
+    expect(screen.getByText('Showing 20 of 45')).toBeInTheDocument()
+  })
+
+  it('filters candidates by search text', async () => {
+    const user = userEvent.setup()
+    renderPage()
+
+    expect(await screen.findByText('Ava Johnson')).toBeInTheDocument()
+
+    await user.type(screen.getByPlaceholderText(/search by name/i), 'Ava Johnson')
+
+    expect(await screen.findByText('Showing 1 of 1', {}, { timeout: 2000 })).toBeInTheDocument()
+    expect(screen.queryByText('Liam Smith')).not.toBeInTheDocument()
+  })
+
+  it('filters candidates by status chip', async () => {
+    const user = userEvent.setup()
+    renderPage()
+
+    await screen.findByText('Ava Johnson')
+
+    await user.click(screen.getByRole('button', { name: 'Applied' }))
+
+    expect(await screen.findByText('Showing 8 of 8')).toBeInTheDocument()
   })
 
   it('submits the Add Candidate form and shows the new candidate after refetch', async () => {

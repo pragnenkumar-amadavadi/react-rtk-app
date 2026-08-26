@@ -40,10 +40,6 @@ export const PageTitle = styled(Typography)({
   fontWeight: 700,
 });
 
-export const CandidateCount = styled(Typography)(({ theme }) => ({
-  color: theme.palette.text.secondary,
-}));
-
 export const AddButton = styled(Button)(({ theme }) => ({
   width: '100%',
   [theme.breakpoints.up('sm')]: {

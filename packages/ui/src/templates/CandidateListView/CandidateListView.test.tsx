@@ -56,15 +56,19 @@ const mockCandidates: Candidate[] = [
 
 const baseProps = {
   candidates: mockCandidates,
+  total: 2,
   isLoading: false,
   hasMore: false,
   isError: false,
   dialogOpen: false,
+  status: [],
   loadMore: jest.fn(),
   onAddClick: jest.fn(),
   onDialogClose: jest.fn(),
   onDialogSubmit: jest.fn(),
   onCardHover: jest.fn(),
+  onSearchChange: jest.fn(),
+  onStatusChange: jest.fn(),
 }
 
 describe('CandidateListView', () => {
@@ -83,7 +87,7 @@ describe('CandidateListView', () => {
 
   it('shows the candidate count', () => {
     renderWithTheme(<CandidateListView {...baseProps} />)
-    expect(screen.getByText('Showing 2 candidates')).toBeInTheDocument()
+    expect(screen.getByText('Showing 2 of 2')).toBeInTheDocument()
   })
 
   it('shows skeleton placeholders during initial load', async () => {

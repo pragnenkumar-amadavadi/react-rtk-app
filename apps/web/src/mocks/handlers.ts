@@ -38,12 +38,35 @@ function findById<T extends { id: unknown }>(items: T[], id: T['id']): FindResul
   return record ? { found: true, record } : { found: false };
 }
 
+// Mirrors the BE's candidate.controller.ts filtering so MSW (dev:mock + integration
+// tests) behaves like the real API. `status[]` matches axios's default bracket-array
+// param serialization for a `status: Candidate['status'][]` query param.
+function filterCandidates(items: Candidate[], url: URL): Candidate[] {
+  const search = (url.searchParams.get('search') ?? '').trim().toLowerCase();
+  const statusFilter = url.searchParams.getAll('status[]');
+
+  let filtered = items;
+  if (search) {
+    filtered = filtered.filter(
+      (c) =>
+        c.name.toLowerCase().includes(search) ||
+        c.email.toLowerCase().includes(search) ||
+        c.position.toLowerCase().includes(search),
+    );
+  }
+  if (statusFilter.length > 0) {
+    filtered = filtered.filter((c) => statusFilter.includes(c.status));
+  }
+  return filtered;
+}
+
 let nextApplicationId = 1000;
 
 export const handlers = [
   http.get('/api/candidates', ({ request }) => {
-    const { page, limit } = getPageParams(new URL(request.url));
-    const response: CandidateListResponse = paginate(candidates, page, limit);
+    const url = new URL(request.url);
+    const { page, limit } = getPageParams(url);
+    const response: CandidateListResponse = paginate(filterCandidates(candidates, url), page, limit);
     return HttpResponse.json(response);
   }),
 
