@@ -82,3 +82,25 @@ describe('CandidateDetailPage — status mutation (optimistic)', () => {
     expect(screen.queryByText('Screening', { selector: '.MuiChip-label' })).not.toBeInTheDocument()
   })
 })
+
+describe('CandidateDetailPage — status history', () => {
+  // Runs against the real (un-overridden) handlers, so both the status PATCH
+  // and the status-history GET it triggers a refetch of are exercised for real.
+  it('shows the new transition after a real status change, without a manual reload', async () => {
+    const user = userEvent.setup()
+    renderPage('1')
+
+    await screen.findByText('Ava Johnson')
+    expect(screen.getByText(/no status changes yet/i)).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Move to Screening' }))
+
+    // Once the history entry lands, the header's own status chip has already
+    // rolled forward to "Screening" — so "Applied" (chip-label only, not the
+    // unrelated "Applied" field label) can only be the entry's fromStatus chip,
+    // and "Screening" now matches twice: the header chip and the entry's toStatus chip.
+    await screen.findByText('Applied', { selector: '.MuiChip-label' })
+    expect(screen.getAllByText('Screening', { selector: '.MuiChip-label' })).toHaveLength(2)
+    expect(screen.queryByText(/no status changes yet/i)).not.toBeInTheDocument()
+  })
+})

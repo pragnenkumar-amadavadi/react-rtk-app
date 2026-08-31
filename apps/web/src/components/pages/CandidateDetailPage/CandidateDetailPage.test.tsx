@@ -10,6 +10,7 @@ import {
   useCandidateNotesQuery,
   useAddCandidateNoteMutation,
 } from '../../../features/candidates/candidateNotesQueries'
+import { useCandidateStatusHistoryQuery } from '../../../features/candidates/candidateStatusHistoryQueries'
 import CandidateDetailPage from './CandidateDetailPage.component'
 
 // Factory prevents loading the real module chain (→ axiosClient → config → import.meta.env)
@@ -21,6 +22,10 @@ jest.mock('../../../features/candidates/candidateQueries', () => ({
 jest.mock('../../../features/candidates/candidateNotesQueries', () => ({
   useCandidateNotesQuery: jest.fn(),
   useAddCandidateNoteMutation: jest.fn(),
+}))
+
+jest.mock('../../../features/candidates/candidateStatusHistoryQueries', () => ({
+  useCandidateStatusHistoryQuery: jest.fn(),
 }))
 
 // Provide a fixed :id param without needing a full router setup
@@ -46,6 +51,7 @@ const mockQueryBase = { data: undefined, isLoading: false, isError: false }
 const mockUpdateStatusMutate = jest.fn()
 const mockNotesQueryBase = { data: [], isLoading: false, isError: false }
 const mockAddNoteMutationBase = { mutate: jest.fn(), isPending: false }
+const mockStatusHistoryQueryBase = { data: [], isLoading: false, isError: false }
 
 describe('CandidateDetailPage', () => {
   beforeEach(() => {
@@ -60,6 +66,9 @@ describe('CandidateDetailPage', () => {
     )
     jest.mocked(useAddCandidateNoteMutation).mockReturnValue(
       mockAddNoteMutationBase as unknown as ReturnType<typeof useAddCandidateNoteMutation>,
+    )
+    jest.mocked(useCandidateStatusHistoryQuery).mockReturnValue(
+      mockStatusHistoryQueryBase as unknown as ReturnType<typeof useCandidateStatusHistoryQuery>,
     )
   })
 
@@ -80,6 +89,18 @@ describe('CandidateDetailPage', () => {
     renderWithTheme(<CandidateDetailPage />)
     expect(await screen.findByText('Jane Smith')).toBeInTheDocument()
     expect(await screen.findByText('jane@example.com')).toBeInTheDocument()
+  })
+
+  it('passes status history from the query to the view', async () => {
+    jest.mocked(useCandidateQuery).mockReturnValue({ ...mockQueryBase, data: mockCandidate } as unknown as ReturnType<typeof useCandidateQuery>)
+    jest.mocked(useCandidateStatusHistoryQuery).mockReturnValue({
+      ...mockStatusHistoryQueryBase,
+      data: [{ id: 1, candidateId: mockCandidate.id, fromStatus: 'applied', toStatus: 'screening', changedAt: '2026-05-15T09:00:00Z' }],
+    } as unknown as ReturnType<typeof useCandidateStatusHistoryQuery>)
+    renderWithTheme(<CandidateDetailPage />)
+
+    expect(await screen.findByText('Status History')).toBeInTheDocument()
+    expect(screen.getByText('Screening')).toBeInTheDocument()
   })
 
   it('calls the status mutation with the route id and target status', async () => {

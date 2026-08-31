@@ -456,6 +456,8 @@ useMutation({
 
 Prefer `invalidateQueries` over manual `setQueryData` for list mutations — simpler and always consistent with the server. Always invalidate at `candidateKeys.lists()` (not `.list()`) so future filtered variants are also busted.
 
+**Cross-resource invalidation:** when a mutation changes state that a *different* query depends on, invalidate that query's key too, not just the mutation's own resource — e.g. updating a candidate's status also appends a status-history entry server-side, so `useUpdateCandidateStatusMutation`'s `onSettled` invalidates both `candidateKeys.detail(id)` and `candidateStatusHistoryKeys.list(id)` (imported from the sibling `candidateStatusHistoryQueries.ts`). Grep for a mutation's side effects on the BE before assuming its own resource's key is the only one to bust.
+
 ### What belongs where
 
 | Concern | File |

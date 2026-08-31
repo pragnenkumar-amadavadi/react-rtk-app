@@ -1,4 +1,5 @@
 import CandidateStatusControl from '../../organisms/CandidateStatusControl';
+import CandidateStatusHistory from '../../organisms/CandidateStatusHistory';
 import CandidateNotes from '../../organisms/CandidateNotes';
 import type { CandidateDetailViewProps } from './CandidateDetailView.types';
 import {
@@ -28,6 +29,8 @@ export default function CandidateDetailView({
   isError,
   isUpdatingStatus,
   onStatusChange,
+  statusHistory,
+  statusHistoryLoading,
   notes,
   notesLoading,
   notesSubmitting,
@@ -111,6 +114,8 @@ export default function CandidateDetailView({
           </div>
         </ContactGrid>
       </DetailCard>
+
+      <CandidateStatusHistory history={statusHistory} isLoading={statusHistoryLoading} />
 
       <CandidateNotes
         notes={notes}

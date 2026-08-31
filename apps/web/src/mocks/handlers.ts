@@ -10,6 +10,7 @@ import {
   type Candidate,
   type CandidateListResponse,
   type CandidateNote,
+  type CandidateStatusHistoryEntry,
   type Application,
   type ApplicantsResponse,
   type ApplicationPayload,
@@ -98,8 +99,23 @@ function filterCandidates(items: Candidate[], url: URL): Candidate[] {
 
 let nextApplicationId = 1000;
 let nextNoteId = 1;
+let nextStatusHistoryId = 1;
 const candidateNotes: CandidateNote[] = [];
+const candidateStatusHistory: CandidateStatusHistoryEntry[] = [];
 const jobApplications: Application[] = [];
+
+// Mirrors the BE's candidate.controller.ts recordStatusChange — only a real
+// transition is worth a history entry, not a no-op "update" to the same status.
+function recordStatusChange(candidate: Candidate, toStatus: Candidate['status']): void {
+  if (candidate.status === toStatus) return;
+  candidateStatusHistory.push({
+    id: nextStatusHistoryId++,
+    candidateId: candidate.id,
+    fromStatus: candidate.status,
+    toStatus,
+    changedAt: new Date().toISOString(),
+  });
+}
 
 export const handlers = [
   http.get('/api/candidates', ({ request }) => {
@@ -138,6 +154,7 @@ export const handlers = [
         return HttpResponse.json({ message: 'Invalid status' }, { status: 400 });
       }
 
+      recordStatusChange(result.record, status);
       result.record.status = status;
       return HttpResponse.json(result.record);
     },
@@ -155,6 +172,7 @@ export const handlers = [
       const results: BulkCandidateStatusResult[] = ids.map((id) => {
         const candidate = byId.get(id);
         if (!candidate) return { id: toCandidateId(id), success: false, error: `Candidate with id ${id} not found` };
+        recordStatusChange(candidate, status);
         candidate.status = status;
         return { id: toCandidateId(id), success: true, candidate };
       });
@@ -268,6 +286,18 @@ export const handlers = [
       return HttpResponse.json(newNote, { status: 201 });
     },
   ),
+
+  http.get<{ id: string }>('/api/candidates/:id/status-history', ({ params }) => {
+    const candidateId = toCandidateId(Number(params.id));
+    if (!findById(candidates, candidateId).found) {
+      return notFound('Candidate not found');
+    }
+
+    const sorted = candidateStatusHistory
+      .filter((h) => h.candidateId === candidateId)
+      .sort((a, b) => new Date(b.changedAt).getTime() - new Date(a.changedAt).getTime());
+    return HttpResponse.json(sorted);
+  }),
 
   http.get('/api/dashboard/stats', () => {
     return HttpResponse.json(computeDashboardStats());

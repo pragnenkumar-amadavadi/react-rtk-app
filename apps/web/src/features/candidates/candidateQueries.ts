@@ -15,6 +15,7 @@ import {
   updateCandidateStatus,
   bulkUpdateCandidateStatus,
 } from '../../api/candidatesApi';
+import { candidateStatusHistoryKeys } from './candidateStatusHistoryQueries';
 import type { Candidate, CandidateId, CandidateListParams } from '@repo/types';
 
 const LIMIT = 20;
@@ -131,6 +132,7 @@ export function useUpdateCandidateStatusMutation() {
     onSettled: (_data, _err, { id }) => {
       queryClient.invalidateQueries({ queryKey: candidateKeys.lists() });
       queryClient.invalidateQueries({ queryKey: candidateKeys.detail(id) });
+      queryClient.invalidateQueries({ queryKey: candidateStatusHistoryKeys.list(id) });
     },
   });
 }
@@ -139,8 +141,11 @@ export function useBulkUpdateCandidateStatusMutation() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: bulkUpdateCandidateStatus,
-    onSuccess: () => {
+    onSuccess: (_data, { ids }) => {
       queryClient.invalidateQueries({ queryKey: candidateKeys.lists() });
+      ids.forEach((id) => {
+        queryClient.invalidateQueries({ queryKey: candidateStatusHistoryKeys.list(String(id)) });
+      });
     },
   });
 }

@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import { formatTimestamp } from '../../utils/formatTimestamp';
 import type { Props } from './CandidateNotes.types';
 import {
   SectionRoot,
@@ -55,15 +56,7 @@ export default function CandidateNotes({ notes, isLoading, isSubmitting, onAddNo
           {notes.map((note) => (
             <NoteItem key={note.id}>
               <NoteBody variant="body2">{note.body}</NoteBody>
-              <NoteTimestamp variant="caption">
-                {new Date(note.createdAt).toLocaleString('en-US', {
-                  month: 'short',
-                  day: 'numeric',
-                  year: 'numeric',
-                  hour: 'numeric',
-                  minute: '2-digit',
-                })}
-              </NoteTimestamp>
+              <NoteTimestamp variant="caption">{formatTimestamp(note.createdAt)}</NoteTimestamp>
             </NoteItem>
           ))}
         </NoteList>

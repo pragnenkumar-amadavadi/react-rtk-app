@@ -12,5 +12,7 @@ export { default as BulkStatusToolbar } from './BulkStatusToolbar';
 export type { BulkStatusToolbarProps } from './BulkStatusToolbar';
 export { default as CandidateNotes } from './CandidateNotes';
 export type { Props as CandidateNotesProps } from './CandidateNotes';
+export { default as CandidateStatusHistory } from './CandidateStatusHistory';
+export type { Props as CandidateStatusHistoryProps } from './CandidateStatusHistory';
 export { default as JobApplicants } from './JobApplicants';
 export type { Props as JobApplicantsProps } from './JobApplicants';

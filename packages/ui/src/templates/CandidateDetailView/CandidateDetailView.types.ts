@@ -1,4 +1,4 @@
-import type { Candidate, CandidateNote } from '@repo/types';
+import type { Candidate, CandidateNote, CandidateStatusHistoryEntry } from '@repo/types';
 
 export interface CandidateDetailViewProps {
   candidate: Candidate | undefined;
@@ -6,6 +6,8 @@ export interface CandidateDetailViewProps {
   isError: boolean;
   isUpdatingStatus?: boolean;
   onStatusChange: (status: Candidate['status']) => void;
+  statusHistory: CandidateStatusHistoryEntry[];
+  statusHistoryLoading: boolean;
   notes: CandidateNote[];
   notesLoading: boolean;
   notesSubmitting: boolean;
