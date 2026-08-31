@@ -52,4 +52,10 @@ describe('CandidateCard', () => {
     renderWithTheme(<CandidateCard candidate={mockCandidate} />)
     expect(screen.getByText('Interview')).toBeInTheDocument()
   })
+
+  it('renders the avatar with the candidate photo and name as alt text', () => {
+    renderWithTheme(<CandidateCard candidate={mockCandidate} />)
+    const avatar = screen.getByRole('img', { name: 'Alice Johnson' })
+    expect(avatar).toHaveAttribute('src', mockCandidate.avatarUrl)
+  })
 })
