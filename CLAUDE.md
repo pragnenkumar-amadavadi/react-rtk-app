@@ -565,6 +565,8 @@ Both patterns are **no-ops when data is already fresh** — `prefetchQuery` / `p
 
 `pnpm --filter web run dev:mock` runs the app against fully mocked API responses (no backend needed); plain `pnpm --filter web run dev` is unchanged and hits the real API. Toggle lives entirely behind one env flag — no code branches on "am I mocking." All of this stays in `apps/web` — MSW/mocking is dev/test tooling specific to this app, not shared infrastructure.
 
+**The real API** is `claude-learn-mocks`, a separate sibling repo (typically checked out at `../claude-learn-mocks`) that `apps/web/vite.config.ts` proxies `/api` to at `localhost:8080` for `pnpm run dev`. It has its own CLAUDE.md documenting its route/controller/data conventions. When a feature needs new or changed data (not just new UI over existing data), check that repo for the matching endpoint — `handlers.ts` below is this app's own mock of it and needs the equivalent change to stay in sync, but isn't a substitute for the real endpoint existing.
+
 - **`@repo/api-client`'s `config.ts`** — `export const USE_MOCKS = import.meta.env.VITE_ENABLE_MOCKS === 'true'` (isolated here like `API_BASE_URL`, for the same Jest/`import.meta.env` reason).
 - **`apps/web/src/main.tsx`** — an async `enableMocking()` gate runs before `createRoot(...).render(...)`; when `USE_MOCKS` is false it's a no-op and never imports `./mocks/browser`, so `pnpm run dev` behavior is provably unchanged.
 - **`apps/web/src/mocks/`**:
