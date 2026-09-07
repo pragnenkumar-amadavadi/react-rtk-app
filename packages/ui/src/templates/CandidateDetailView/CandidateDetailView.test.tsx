@@ -1,6 +1,6 @@
 import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { toCandidateId, type Candidate, type CandidateNote } from '@repo/types'
+import { toCandidateId, type Candidate, type CandidateNote, type CandidateStatusHistoryEntry } from '@repo/types'
 import { renderWithTheme } from '../../tests/utils'
 import CandidateDetailView from './CandidateDetailView.component'
 
@@ -21,11 +21,20 @@ const mockNotes: CandidateNote[] = [
   { id: 1, candidateId: toCandidateId(42), body: 'Great communicator.', createdAt: '2026-05-16T10:00:00Z' },
 ]
 
+// Deliberately avoids 'applied' (collides with the "Applied" contact-grid
+// field label) and 'offer' (collides with mockCandidate's own status chip).
+const mockStatusHistory: CandidateStatusHistoryEntry[] = [
+  { id: 2, candidateId: toCandidateId(42), fromStatus: 'hired', toStatus: 'rejected', changedAt: '2026-05-17T10:00:00Z' },
+  { id: 1, candidateId: toCandidateId(42), fromStatus: 'screening', toStatus: 'interview', changedAt: '2026-05-15T09:00:00Z' },
+]
+
 const baseProps = {
   candidate: mockCandidate,
   isLoading: false,
   isError: false,
   onStatusChange: jest.fn(),
+  statusHistory: mockStatusHistory,
+  statusHistoryLoading: false,
   notes: mockNotes,
   notesLoading: false,
   notesSubmitting: false,
@@ -82,6 +91,15 @@ describe('CandidateDetailView', () => {
     renderWithTheme(<CandidateDetailView {...baseProps} />)
     await user.click(screen.getByRole('button', { name: 'Mark as Hired' }))
     expect(baseProps.onStatusChange).toHaveBeenCalledWith('hired')
+  })
+
+  it('renders the status history section with existing transitions', () => {
+    renderWithTheme(<CandidateDetailView {...baseProps} />)
+    expect(screen.getByText('Status History')).toBeInTheDocument()
+    expect(screen.getByText('Screening')).toBeInTheDocument()
+    expect(screen.getByText('Interview')).toBeInTheDocument()
+    expect(screen.getByText('Hired')).toBeInTheDocument()
+    expect(screen.getByText('Rejected')).toBeInTheDocument()
   })
 
   it('renders the notes section with existing notes', () => {

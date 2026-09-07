@@ -8,12 +8,14 @@ import {
   useCandidateNotesQuery,
   useAddCandidateNoteMutation,
 } from '../../../features/candidates/candidateNotesQueries';
+import { useCandidateStatusHistoryQuery } from '../../../features/candidates/candidateStatusHistoryQueries';
 import { CandidateDetailView } from '@repo/ui';
 
 export default function CandidateDetailPage() {
   const { id = '' } = useParams<{ id: string }>();
   const { data: candidate, isLoading, isError } = useCandidateQuery(id);
   const { mutate: updateStatus, isPending: isUpdatingStatus } = useUpdateCandidateStatusMutation();
+  const { data: statusHistory = [], isLoading: statusHistoryLoading } = useCandidateStatusHistoryQuery(id);
   const { data: notes = [], isLoading: notesLoading } = useCandidateNotesQuery(id);
   const { mutate: addNote, isPending: notesSubmitting } = useAddCandidateNoteMutation(id);
 
@@ -28,6 +30,8 @@ export default function CandidateDetailPage() {
       isError={isError}
       isUpdatingStatus={isUpdatingStatus}
       onStatusChange={handleStatusChange}
+      statusHistory={statusHistory}
+      statusHistoryLoading={statusHistoryLoading}
       notes={notes}
       notesLoading={notesLoading}
       notesSubmitting={notesSubmitting}
