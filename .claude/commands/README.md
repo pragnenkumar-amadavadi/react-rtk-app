@@ -2,7 +2,7 @@
 
 Project-local Claude Code commands for this workspace. Each is a `.md` file here; typing `/<filename>` in a Claude Code session run from this repo invokes it. **After adding or editing a command file, restart the Claude Code session** (exit and run `claude` again) — the command list is loaded once at session start, so mid-session edits won't appear in autocomplete until then.
 
-This is the index for commands specifically. See `docs/PROMPT_TEMPLATES.md` for the fuller prompt template library — the same 14 commands/skill below plus copy-paste prompt text for anything not (yet) promoted to a command.
+This is the index for commands specifically. See `docs/PROMPT_TEMPLATES.md` for the fuller prompt template library — the same 16 commands/skill below plus copy-paste prompt text for anything not (yet) promoted to a command.
 
 Component-scoped commands (`audit-component`, `generate-story`, `perf-check`, `write-tests`, `audit-accessibility`) take one argument: a component name (e.g. `CandidateCard`) or a path, resolved under `packages/ui/src/{atoms,molecules,organisms,templates}` (and `apps/web/src/components/pages` where applicable). If the name matches more than one component, the command asks which before continuing.
 
@@ -89,3 +89,15 @@ Use when: adding a new domain model, before hand-writing an ad-hoc shape inline 
 Runs lint/typecheck scoped to a path and explains each failure by the specific rule/config that fired, per Section 13 — **read-only**, never proposes disabling a rule as the default fix.
 
 Use when: cleaning up a path's lint/type errors and wanting the *why*, not just the raw output.
+
+## `/audit-responsive <name>`
+
+Checks breakpoint convention (`sx`-based breakpoints vs `theme.breakpoints` inside `styled()`), overflow/fixed sizing at narrow viewports, fluid media/typography, and touch-target spacing, per Section 6 — **read-only**, stops for confirmation before applying anything.
+
+Use when: reviewing a component before shipping, or after adding a new layout that hasn't been checked across viewport widths.
+
+## `/review-checklist [name-or-files]`
+
+Runs the full frontend review checklist — TypeScript strictness (flags new `any`/`as any`/`@ts-ignore`/`@ts-expect-error` in the diff), accessibility, responsive design, and performance — against staged changes, a named component, or an explicit file list, in one consolidated report. Applies the same checks as `/lint-audit`, `/audit-accessibility`, `/audit-responsive`, and `/perf-check` — **read-only**, manual invocation only (not wired to a git hook).
+
+Use when: doing a final self-review before committing or opening a PR, instead of running the four individual audit commands separately.

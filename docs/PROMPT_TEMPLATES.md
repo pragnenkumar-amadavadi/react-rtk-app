@@ -1,6 +1,6 @@
 # Prompt Template Library
 
-A catalog of 15 reusable, project-tailored prompt templates for the frontend work that comes up repeatedly in this pnpm+Turborepo workspace (`apps/web` + `@repo/ui` + friends — see `CLAUDE.md` for the full architecture).
+A catalog of 17 reusable, project-tailored prompt templates for the frontend work that comes up repeatedly in this pnpm+Turborepo workspace (`apps/web` + `@repo/ui` + friends — see `CLAUDE.md` for the full architecture).
 
 Most templates are promoted to one-click Claude Code slash commands (`.claude/commands/*.md` — see `.claude/commands/README.md` for that index). A few are copy-paste prompt text only, for tasks uncommon enough that a dedicated command isn't worth maintaining. Every template cross-references the `CLAUDE.md` section its conventions come from — read that section for the *why* behind a rule; this doc only tells you *what* to ask for.
 
@@ -25,6 +25,8 @@ Most templates are promoted to one-click Claude Code slash commands (`.claude/co
 | 13 | [Design Domain Type](#13-design-domain-type) | `/design-type` | §12 |
 | 14 | [Lint & Type-Compliance Audit](#14-lint--type-compliance-audit) | `/lint-audit` | §13 |
 | 15 | [Verify Feature](#15-verify-feature) | skill `verify-feature` | cross-repo |
+| 16 | [Audit Responsive Design](#16-audit-responsive-design) | `/audit-responsive` | §6 |
+| 17 | [Review Checklist](#17-review-checklist) | `/review-checklist` | §5, §6, §7, §9, §13 |
 
 ---
 
@@ -153,6 +155,24 @@ Most templates are promoted to one-click Claude Code slash commands (`.claude/co
 **Purpose:** Acceptance-check a completed feature against its spec across both repos (this FE repo and the sibling `claude-learn-mocks` BE repo) — screen behavior, endpoint contract, and FE data flow — then run lint/typecheck/tests and smoke-test end-to-end.
 **Command:** skill `verify-feature` (auto-invoked, or ask for it by name)
 **Notes:** Existing skill, read-only — never edits code. Use after a `feature/*` branch or worktree claims a feature is done. See `.claude/skills/verify-feature/SKILL.md` for the full checklist.
+
+### 16. Audit Responsive Design
+
+**Purpose:** Check a component for responsive-design issues — breakpoint convention, overflow at narrow viewports, fluid media/typography, and touch-target sizing.
+**Command:** `/audit-responsive {{ComponentName}}`
+**Prompt template:**
+> Audit `{{ComponentName}}` for responsive-design issues — `sx`-based breakpoints vs the `theme.breakpoints` convention, overflow/fixed sizing at narrow viewports, fluid media and typography, and touch-target spacing. Report only, don't fix yet.
+
+**Notes:** Read-only. Flags any `sx={{ xs: ..., sm: ... }}` responsive prop as a direct convention violation (Section 6 requires breakpoints inside `styled()`), and calibrates other findings against how sibling components in the same tier already handle responsiveness (e.g. `CandidateListView`, `AppNav`).
+
+### 17. Review Checklist
+
+**Purpose:** Run the full frontend review checklist — TypeScript strictness, accessibility, responsive design, and performance — against changed or specified files in one consolidated report, instead of running the four individual audits separately.
+**Command:** `/review-checklist [{{ComponentName}} | {{file-list}}]`
+**Prompt template:**
+> Run the full review checklist against {{staged changes | this component | these files}} — TypeScript strictness (no new `any`/`@ts-ignore` in the diff), accessibility, responsive design, and performance. Report only, don't fix yet.
+
+**Notes:** Read-only, manual invocation — run it yourself before opening a PR or committing; it is **not** wired to a git hook. Defaults to staged files (`git diff --cached`) when called with no argument, falling back to the diff against `main` if nothing is staged. Applies the same checks as `/lint-audit`, `/audit-accessibility`, `/audit-responsive`, and `/perf-check`, scoped to whatever's in play, and calls out which findings are severe enough to fix before committing versus advisory.
 
 ---
 
