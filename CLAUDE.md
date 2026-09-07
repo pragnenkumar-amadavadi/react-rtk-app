@@ -629,4 +629,30 @@ export default defineConfig([
 
 ---
 
+## 14. Prompt Template Library
+
+`docs/PROMPT_TEMPLATES.md` catalogs 15 reusable, project-tailored prompt templates for the frontend tasks that come up repeatedly in this workspace. Most are promoted to one-click slash commands in `.claude/commands/`; a couple exist only as copy-paste prompt text in the doc itself.
+
+| # | Template | Command | Section this follows |
+|---|---|---|---|
+| 1 | Generate Component | `/generate-component` | §5 |
+| 2 | Create Storybook Story | `/generate-story` | §5, §11 |
+| 3 | Write RTL Unit Tests | `/write-tests` | §7 |
+| 4 | Write Integration Test | `/write-integration-test` | §7 |
+| 5 | Audit Accessibility | `/audit-accessibility` | §5, §6, §13 |
+| 6 | Optimize Bundle | `/optimize-bundle` | §10 |
+| 7 | Refactor State Management | `/refactor-state` | §9 |
+| 8 | Audit Component (prop drilling) | `/audit-component` | §5 |
+| 9 | Perf Check (re-renders) | `/perf-check` | §6 |
+| 10 | Add TanStack Query Hook | `/add-query-hook` | §9 |
+| 11 | Add Route | `/add-route` | §10 |
+| 12 | Add MSW Mock Handler | `/add-mock-handler` | §11 |
+| 13 | Design Domain Type | `/design-type` | §12 |
+| 14 | Lint & Type-Compliance Audit | `/lint-audit` | §13 |
+| 15 | Verify Feature (cross-repo acceptance test) | skill `verify-feature` | — |
+
+**Adding a new template:** create the `.claude/commands/<name>.md` file following the existing frontmatter convention (`description` + `argument-hint`, `Target: \`$ARGUMENTS\``, numbered `##` steps ending in `## N. Summary`), add it to `.claude/commands/README.md`, and add a row + subsection to `docs/PROMPT_TEMPLATES.md`.
+
+---
+
 **These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
